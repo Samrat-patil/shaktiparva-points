@@ -56,7 +56,8 @@ function renderYearTable(year) {
   title.className = "section-title";
   title.innerHTML = `${year.icon} ${year.title}`;
 
-
+  const wrapper = document.createElement("div");
+  wrapper.className = "table-wrapper";
 
   const table = document.createElement("table");
   table.innerHTML = `
@@ -71,9 +72,7 @@ function renderYearTable(year) {
 
   const tbody = table.querySelector("tbody");
 
-  const branchesToShow = year.key === 'LY' ? ALL_BRANCHES.filter(b => b !== 'AI&ROBO') : ALL_BRANCHES;
-
-    branchesToShow.forEach((branch, index) => {
+  ALL_BRANCHES.forEach((branch, index) => {
     const info = data[branch] || { total: 0, breakdown: {} };
 
     const row = document.createElement("tr");
@@ -130,6 +129,8 @@ function renderTotalTable() {
   title.className = "section-title";
   title.innerHTML = "🏆 Overall Total";
 
+  const wrapper = document.createElement("div");
+  wrapper.className = "table-wrapper";
 
   const table = document.createElement("table");
   table.innerHTML = `
@@ -371,9 +372,11 @@ function addScrollAnimations() {
   }, observerOptions);
 
   // Observe all table wrappers and section titles
-  const elements = document.querySelectorAll('table, .section-title');
-  elements.forEach(el => observer.observe(el));
-
+  const elements = document.querySelectorAll('.table-wrapper, .section-title');
+  elements.forEach(el => {
+    observer.observe(el);
+  });
+}
 
 // Add click outside modal to close
 document.addEventListener('DOMContentLoaded', () => {
