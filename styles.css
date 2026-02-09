@@ -569,19 +569,6 @@ body {
   }
 }
 
-/* === Tables === */
-.table-wrapper {
-  overflow-x: auto;
-  border-radius: var(--radius-lg);
-  background: var(--bg-card);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  margin-bottom: var(--spacing-xl);
-  animation: tableSlideUp 0.6s ease forwards;
-  opacity: 0;
-  box-shadow: var(--shadow-card);
-}
-
 @keyframes tableSlideUp {
   from {
     opacity: 0;
@@ -601,14 +588,11 @@ table {
   table-layout: fixed;
 }
 
-th:first-child,
-td:first-child {
-  width: 50%;  /* Branch column takes 50% */
-}
-
-th:last-child,
-td:last-child {
-  width: 50%;  /* Points column takes 50% */
+th, td {
+  width: 50%;
+  border: 1px solid #333;
+  padding: 10px;
+  text-align: center;
 }
 
 thead {
