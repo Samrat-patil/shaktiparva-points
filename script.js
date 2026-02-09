@@ -72,7 +72,9 @@ function renderYearTable(year) {
 
   const tbody = table.querySelector("tbody");
 
-  ALL_BRANCHES.forEach((branch, index) => {
+  const branchesToShow = year.key === 'LY' ? ALL_BRANCHES.filter(b => b !== 'AI&ROBO') : ALL_BRANCHES;
+
+    branchesToShow.forEach((branch, index) => {
     const info = data[branch] || { total: 0, breakdown: {} };
 
     const row = document.createElement("tr");

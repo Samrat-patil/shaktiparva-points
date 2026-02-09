@@ -598,6 +598,17 @@ table {
   border-collapse: separate;
   border-spacing: 0;
   min-width: 320px;
+  table-layout: fixed;
+}
+
+th:first-child,
+td:first-child {
+  width: 50%;  /* Branch column takes 50% */
+}
+
+th:last-child,
+td:last-child {
+  width: 50%;  /* Points column takes 50% */
 }
 
 thead {
