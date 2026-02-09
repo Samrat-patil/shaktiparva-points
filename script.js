@@ -98,21 +98,46 @@ function renderTotalTable() {
   container.appendChild(table);
 }
 
-function openModal(branch, breakdown) {
+// same ALL_BRANCHES, YEARS, yearData as before
+
+function openModal(branch, breakdown, isTotal = false) {
   document.getElementById("modal-title").innerText =
-    `${branch} – Sport-wise Points`;
+    `${branch} – ${isTotal ? "Year-wise Breakdown" : "Sport-wise Breakdown"}`;
 
-  const list = document.getElementById("modal-list");
-  list.innerHTML = "";
+  const body = document.getElementById("modal-body");
+  body.innerHTML = "";
 
-  if (Object.keys(breakdown).length === 0) {
-    list.innerHTML = "<li>No points yet</li>";
-  } else {
-    for (const sport in breakdown) {
-      const li = document.createElement("li");
-      li.innerText = `${sport}: ${breakdown[sport]}`;
-      list.appendChild(li);
+  if (!isTotal) {
+    if (Object.keys(breakdown).length === 0) {
+      body.innerHTML = "<p>No points yet</p>";
+    } else {
+      const ul = document.createElement("ul");
+      for (const sport in breakdown) {
+        const li = document.createElement("li");
+        li.innerText = `${sport}: ${breakdown[sport]}`;
+        ul.appendChild(li);
+      }
+      body.appendChild(ul);
     }
+  } else {
+    YEARS.forEach(y => {
+      const yearInfo = yearData[y.key][branch];
+      const h3 = document.createElement("h3");
+      h3.innerText = y.key;
+      body.appendChild(h3);
+
+      if (!yearInfo || Object.keys(yearInfo.breakdown).length === 0) {
+        body.innerHTML += "<p>—</p>";
+      } else {
+        const ul = document.createElement("ul");
+        for (const sport in yearInfo.breakdown) {
+          const li = document.createElement("li");
+          li.innerText = `${sport}: ${yearInfo.breakdown[sport]}`;
+          ul.appendChild(li);
+        }
+        body.appendChild(ul);
+      }
+    });
   }
 
   document.getElementById("modal").classList.remove("hidden");
