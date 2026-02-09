@@ -274,7 +274,6 @@ function handleModalKeydown(e) {
 
 // Update stats overview
 function updateStatsOverview() {
-  const totalBranches = ALL_BRANCHES.length;
   let totalPoints = 0;
   const branchTotals = {};
 
@@ -290,14 +289,37 @@ function updateStatsOverview() {
     totalPoints += branchTotal;
   });
 
-  // Find leading branch
-  const leadingBranch = Object.entries(branchTotals)
-    .reduce((a, b) => a[1] > b[1] ? a : b)[0];
+  // Sort branches by total points
+  const sortedBranches = Object.entries(branchTotals)
+    .sort((a, b) => b[1] - a[1]);
 
-  // Animate numbers
-  animateNumber('total-branches', totalBranches);
-  animateNumber('total-points', totalPoints);
+  // Update leader
+  const leadingBranch = sortedBranches[0][0];
+  const leadingPoints = sortedBranches[0][1];
+  
   animateText('leading-branch', leadingBranch);
+  setTimeout(() => {
+    document.getElementById('leading-points').textContent = `${leadingPoints} pts`;
+  }, 800);
+
+  // Update top 3 list
+  const top3List = document.getElementById('top-3-list');
+  const medals = ['🥇', '🥈', '🥉'];
+  
+  setTimeout(() => {
+    top3List.innerHTML = '';
+    sortedBranches.slice(0, 3).forEach((branch, index) => {
+      const item = document.createElement('div');
+      item.className = 'top-3-item';
+      item.innerHTML = `
+        <span class="top-3-branch branch-${branch[0].replace('&', '\\&')}">
+          ${medals[index]} ${branch[0]}
+        </span>
+        <span class="top-3-points">${branch[1]}</span>
+      `;
+      top3List.appendChild(item);
+    });
+  }, 1000);
 }
 
 // Animate number counting
