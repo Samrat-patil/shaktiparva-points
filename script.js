@@ -1,12 +1,6 @@
-/* ========================================
-   SHAKTIPARVA'26 Points Dashboard
-   Enhanced JavaScript
-   ======================================== */
 
-const ALL_BRANCHES = [
-  "CS", "ELEC", "ENTC", "INSTRU", "MECH",
-  "MANU", "META", "CIVIL", "AI&ROBO"
-];
+
+const ALL_BRANCHES = ["CS", "ELEC", "ENTC", "INSTRU", "MECH", "MANU", "META", "CIVIL", "AI&ROBO"];
 
 const YEARS = [
   { key: "FY", title: "First Year (FY)", icon: "🎯" },
@@ -15,10 +9,10 @@ const YEARS = [
   { key: "LY", title: "Final Year (LY)", icon: "👑" }
 ];
 
-const container = document.getElementById("tables-container");
 const yearData = {};
+const container = document.getElementById("tables-container");
 
-// Initialize the dashboard
+// Initialize dashboard
 Promise.all(
   YEARS.map(y =>
     fetch(`data/${y.key}.json`)
@@ -35,17 +29,13 @@ Promise.all(
   addScrollAnimations();
 });
 
-// Render all tables
+// Render all tables with stagger
 function renderAllTables() {
   YEARS.forEach((y, index) => {
-    setTimeout(() => {
-      renderYearTable(y);
-    }, index * 100); // Stagger table rendering
+    setTimeout(() => renderYearTable(y), index * 100);
   });
   
-  setTimeout(() => {
-    renderTotalTable();
-  }, YEARS.length * 100);
+  setTimeout(renderTotalTable, YEARS.length * 100);
 }
 
 // Render year-specific table
@@ -86,8 +76,6 @@ function renderYearTable(year) {
     pointsCell.className = "points";
     pointsCell.textContent = info.total;
     pointsCell.onclick = () => openModal(branch, info.breakdown, year.title);
-    
-    // Add tooltip
     pointsCell.title = "Click to view breakdown";
     
     row.appendChild(branchCell);
@@ -99,7 +87,6 @@ function renderYearTable(year) {
   container.appendChild(title);
   container.appendChild(wrapper);
   
-  // Add animation delay based on order
   const currentIndex = YEARS.findIndex(y => y.key === year.key);
   wrapper.style.animationDelay = `${currentIndex * 0.1}s`;
 }
@@ -107,11 +94,13 @@ function renderYearTable(year) {
 // Render total table
 function renderTotalTable() {
   const totals = {};
+  
+  ALL_BRANCHES.forEach(branch => {
+    totals[branch] = { total: 0, breakdown: {} };
+  });
 
-  ALL_BRANCHES.forEach(b => totals[b] = { total: 0, breakdown: {} });
-
-  YEARS.forEach(y => {
-    const data = yearData[y.key];
+  YEARS.forEach(year => {
+    const data = yearData[year.key];
     ALL_BRANCHES.forEach(branch => {
       if (data[branch]) {
         totals[branch].total += data[branch].total;
@@ -145,7 +134,6 @@ function renderTotalTable() {
 
   const tbody = table.querySelector("tbody");
 
-  // Sort branches by total points (descending)
   const sortedBranches = ALL_BRANCHES.slice().sort((a, b) => 
     totals[b].total - totals[a].total
   );
@@ -157,7 +145,6 @@ function renderTotalTable() {
     const branchCell = document.createElement("td");
     branchCell.className = `branch-${branch.replace('&', '\\&')}`;
     
-    // Add medal emoji for top 3
     const medals = ['🥇', '🥈', '🥉'];
     const medalEmoji = index < 3 ? medals[index] + ' ' : '';
     branchCell.innerHTML = `${medalEmoji}${branch}`;
@@ -166,8 +153,6 @@ function renderTotalTable() {
     pointsCell.className = "points";
     pointsCell.textContent = totals[branch].total;
     pointsCell.onclick = () => openModal(branch, totals[branch].breakdown, "Overall Total", true);
-    
-    // Add tooltip
     pointsCell.title = "Click to view year-wise breakdown";
     
     row.appendChild(branchCell);
@@ -182,7 +167,7 @@ function renderTotalTable() {
   wrapper.style.animationDelay = `${YEARS.length * 0.1}s`;
 }
 
-// Open modal with breakdown
+// Modal functions
 function openModal(branch, breakdown, yearTitle, isTotal = false) {
   const modal = document.getElementById("modal");
   const modalTitle = document.getElementById("modal-title");
@@ -192,13 +177,10 @@ function openModal(branch, breakdown, yearTitle, isTotal = false) {
   modalBody.innerHTML = "";
 
   if (!isTotal) {
-    // Sport-wise breakdown
     if (Object.keys(breakdown).length === 0) {
       modalBody.innerHTML = "<p>No points earned yet</p>";
     } else {
       const ul = document.createElement("ul");
-      
-      // Sort sports by points (descending)
       const sortedSports = Object.entries(breakdown).sort((a, b) => b[1] - a[1]);
       
       sortedSports.forEach(([sport, points], index) => {
@@ -214,7 +196,6 @@ function openModal(branch, breakdown, yearTitle, isTotal = false) {
       modalBody.appendChild(ul);
     }
   } else {
-    // Year-wise breakdown
     YEARS.forEach((y, index) => {
       const yearInfo = yearData[y.key][branch];
       
@@ -231,8 +212,6 @@ function openModal(branch, breakdown, yearTitle, isTotal = false) {
         modalBody.appendChild(p);
       } else {
         const ul = document.createElement("ul");
-        
-        // Sort sports by points (descending)
         const sortedSports = Object.entries(yearInfo.breakdown).sort((a, b) => b[1] - a[1]);
         
         sortedSports.forEach(([sport, points], sportIndex) => {
@@ -251,99 +230,61 @@ function openModal(branch, breakdown, yearTitle, isTotal = false) {
   }
 
   modal.classList.remove("hidden");
-  
-  // Add keyboard support
   document.addEventListener('keydown', handleModalKeydown);
 }
 
-// Close modal
 function closeModal() {
-  const modal = document.getElementById("modal");
-  modal.classList.add("hidden");
-  
-  // Remove keyboard listener
+  document.getElementById("modal").classList.add("hidden");
   document.removeEventListener('keydown', handleModalKeydown);
 }
 
-// Handle keyboard events for modal
 function handleModalKeydown(e) {
-  if (e.key === 'Escape') {
-    closeModal();
-  }
+  if (e.key === 'Escape') closeModal();
 }
 
 // Update stats overview
 function updateStatsOverview() {
-  let totalPoints = 0;
   const branchTotals = {};
 
   ALL_BRANCHES.forEach(branch => {
     let branchTotal = 0;
     YEARS.forEach(year => {
       const data = yearData[year.key];
-      if (data[branch]) {
-        branchTotal += data[branch].total;
-      }
+      if (data[branch]) branchTotal += data[branch].total;
     });
     branchTotals[branch] = branchTotal;
-    totalPoints += branchTotal;
   });
 
-  // Sort branches by total points
-  const sortedBranches = Object.entries(branchTotals)
-    .sort((a, b) => b[1] - a[1]);
+  const sortedBranches = Object.entries(branchTotals).sort((a, b) => b[1] - a[1]);
 
   // Update leader
-  const leadingBranch = sortedBranches[0][0];
-  const leadingPoints = sortedBranches[0][1];
+  const [leadingBranch, leadingPoints] = sortedBranches[0];
   
   animateText('leading-branch', leadingBranch);
   setTimeout(() => {
     document.getElementById('leading-points').textContent = `${leadingPoints} pts`;
   }, 800);
 
-  // Update top 3 list
+  // Update top 3
   const top3List = document.getElementById('top-3-list');
   const medals = ['🥇', '🥈', '🥉'];
   
   setTimeout(() => {
     top3List.innerHTML = '';
-    sortedBranches.slice(0, 3).forEach((branch, index) => {
+    sortedBranches.slice(0, 3).forEach(([branch, points], index) => {
       const item = document.createElement('div');
       item.className = 'top-3-item';
       item.innerHTML = `
-        <span class="top-3-branch branch-${branch[0].replace('&', '\\&')}">
-          ${medals[index]} ${branch[0]}
+        <span class="top-3-branch branch-${branch.replace('&', '\\&')}">
+          ${medals[index]} ${branch}
         </span>
-        <span class="top-3-points">${branch[1]}</span>
+        <span class="top-3-points">${points}</span>
       `;
       top3List.appendChild(item);
     });
   }, 1000);
 }
 
-// Animate number counting
-function animateNumber(id, target) {
-  const element = document.getElementById(id);
-  const duration = 1000; // 1 second
-  const steps = 30;
-  const increment = target / steps;
-  let current = 0;
-  let step = 0;
-
-  const timer = setInterval(() => {
-    step++;
-    current = Math.min(current + increment, target);
-    element.textContent = Math.round(current);
-
-    if (step >= steps) {
-      clearInterval(timer);
-      element.textContent = target;
-    }
-  }, duration / steps);
-}
-
-// Animate text appearance
 function animateText(id, text) {
   const element = document.getElementById(id);
   setTimeout(() => {
@@ -355,13 +296,8 @@ function animateText(id, text) {
   }, 800);
 }
 
-// Add scroll-triggered animations
+// Scroll animations
 function addScrollAnimations() {
-  const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-  };
-
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -369,16 +305,17 @@ function addScrollAnimations() {
         entry.target.style.transform = 'translateY(0)';
       }
     });
-  }, observerOptions);
+  }, {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  });
 
-  // Observe all table wrappers and section titles
-  const elements = document.querySelectorAll('.table-wrapper, .section-title');
-  elements.forEach(el => {
+  document.querySelectorAll('.table-wrapper, .section-title').forEach(el => {
     observer.observe(el);
   });
 }
 
-// Add click outside modal to close
+// Event listeners
 document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('modal');
   if (modal) {
@@ -390,66 +327,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Add smooth scroll behavior
+// Smooth scroll
 document.documentElement.style.scrollBehavior = 'smooth';
 
-// Performance optimization: Use requestAnimationFrame for animations
+// Parallax effect on scroll
 let ticking = false;
-
 window.addEventListener('scroll', () => {
   if (!ticking) {
     window.requestAnimationFrame(() => {
-      // Add parallax effect to background orbs
       const scrollY = window.scrollY;
-      const orbs = document.querySelectorAll('.gradient-orb');
-      
-      orbs.forEach((orb, index) => {
+      document.querySelectorAll('.gradient-orb').forEach((orb, index) => {
         const speed = 0.1 + (index * 0.05);
         orb.style.transform = `translate3d(0, ${scrollY * speed}px, 0)`;
       });
-      
       ticking = false;
     });
-    
     ticking = true;
   }
 });
 
-// Add easter egg: Konami code
-let konamiCode = [];
-const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-
-document.addEventListener('keydown', (e) => {
-  konamiCode.push(e.key);
-  konamiCode = konamiCode.slice(-10);
-  
-  if (konamiCode.join(',') === konamiSequence.join(',')) {
-    activateEasterEgg();
-  }
-});
-
-function activateEasterEgg() {
-  // Add disco mode!
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes disco {
-      0% { filter: hue-rotate(0deg); }
-      100% { filter: hue-rotate(360deg); }
-    }
-    .main-container {
-      animation: disco 2s linear infinite !important;
-    }
-  `;
-  document.head.appendChild(style);
-  
-  setTimeout(() => {
-    style.remove();
-  }, 10000); // Stop after 10 seconds
-  
-  console.log('🎉 DISCO MODE ACTIVATED! 🎉');
-}
-
-// Console message
+// Console branding
 console.log('%cSHAKTIPARVA\'26 🏆', 'color: #FFD700; font-size: 24px; font-weight: bold; text-shadow: 0 0 10px rgba(255,215,0,0.5);');
-console.log('%cPoints Dashboard Enhanced Edition', 'color: #00E5FF; font-size: 14px;');
-console.log('%cBuilt with ⚡ by Claude', 'color: #B388FF; font-size: 12px; font-style: italic;');
+console.log('%cPoints Dashboard', 'color: #00E5FF; font-size: 14px;');
